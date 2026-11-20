@@ -4,10 +4,10 @@ MoonOSM 是 MoonBit 编写的 OpenStreetMap Protocolbuffer Binary Format（OSM P
 
 ## 环境与安装
 
-项目 manifest 版本为 `0.1.0`，使用 MoonBit `0.1.20261119` 或更新版本。zlib 解码依赖工具链中的实验性 `moonbitlang/core/compress/zlib` API。在新的 MoonBit 模块中安装精确版本：
+项目 manifest 版本为 `0.1.1`，使用 MoonBit `0.1.20261119` 或更新版本。zlib 解码依赖工具链中的实验性 `moonbitlang/core/compress/zlib` API。在新的 MoonBit 模块中安装精确版本：
 
 ```powershell
-moon add JiangBowen08/moonosm@0.1.0
+moon add JiangBowen08/moonosm@0.1.1
 ```
 
 在消费包的 `moon.pkg` 中加入 `import { "JiangBowen08/moonosm" }`，以 `@moonosm` 调用公开 API。核心库支持 wasm、wasm-gc、js、native；依赖异步文件系统的两个文件示例只支持 wasm。
