@@ -45,7 +45,7 @@ fn ProtoReader::read_varint(self : ProtoReader) -> Int64 {
 ///|
 fn ProtoReader::read_tag(self : ProtoReader) -> Int32 {
   let raw = self.read_varint()
-  if raw <= 0 || raw > 0xffffffffL {
+  if raw <= 0 || raw > 0xffffffffL || raw >> 3 == 0 {
     self.failed = true
     0
   } else {
