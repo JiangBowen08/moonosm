@@ -6,7 +6,7 @@
 
 | 候选方向 | 用户任务与成熟基线 | 已查相邻项目 | 结论 |
 |---|---|---|---|
-| OSM PBF 解码与筛选 | 将 OSM PBF 文件帧、Blob、PrimitiveBlock 解码为节点/Way/Relation；基线为 OSM PBF schema 与 protobuf wire 规则 | `t-ujiie-g/pbf` 通用 protobuf wire；`yyyt0807/moonmvt` Mapbox Vector Tile；`Suquster/moonbit-pathfinding` OSM edge-list 路由 | 继续验证：文件格式、实体模型与输入输出都不同；需检查真实消费者需求与实现闭环 |
+| OSM PBF 解码与筛选 | 将 OSM PBF 文件帧、Blob、PrimitiveBlock 解码为节点/Way/Relation；基线为 OSM PBF schema 与 protobuf wire 规则 | `t-ujiie-g/pbf` 通用 protobuf wire；`yyyt0807/moonmvt` Mapbox Vector Tile；`Suquster/moonbit-pathfinding` OSM edge-list 路由 | 选定：文件格式、实体模型与输入输出不同；实样本差分与三个提取流程已完成 |
 | G-code 读写/校验 | 解析制造指令并检查方言语义，成熟基线是 G-code 方言与刀路工作流 | `cjcjwe/gcode-toolkit` | 淘汰：领域工具已有直接功能重合，独立再造价值不足 |
 | miniSEED 波形读取 | 读取地震台站记录、时间/采样元数据和波形数据，基线为 miniSEED 记录格式 | `hzc-666-ai/moonseis` 与注册表 MoonSeis | 淘汰：已有领域项目覆盖该任务 |
 
@@ -63,8 +63,12 @@
 
 实现范围已增加完整文件内 raw/zlib Blob 解码、矩形 Way 裁剪与范围内 GeoJSON。2026-11-20 使用公开 Andorra 区域 `andorra-latest.osm.pbf`（3,508,711 字节）对照独立 npm 解析器 `osm-pbf-parser@2.3.0`：两边输出均为 529,381 个实体（node 501,748、way 26,819、relation 814），按实体顺序及类型/ID、节点坐标、Way 引用、Relation 成员（类型/ID/角色）、标签键值与顺序逐条比较，共 0 条记录差异。坐标差分容差为 `1e-7` 度；样本导出保存在本机临时目录，不纳入仓库。该实验验证的是这一份 Andorra 样本，不等同于所有 PBF 扩展与压缩编码均兼容，也不能证明真实下游用户需求。
 
-## 决策与未完成门禁
+## 需求依据与完成标准
 
 目前记录范围内未发现成熟的直接 OSM PBF 解码替代；通用 protobuf、MVT、路由图、FlatGeobuf、KML 与 Shapefile 均有不同核心任务。代码与 OSM PBF schema 独立实现，测试夹具为手写的最小 protobuf 字节，不含复制的数据集。
 
-GitHub 搜索和 MoonCakes 索引均有边界；相邻项目的源码对照只覆盖表列的核心文件与功能边界，没有穷尽所有历史或独立验收状态。主题基线是公开 OSM PBF schema；尚无具体下游用户访谈或已验证消费者，三类下游工作流仍是基于成熟格式及接口能力的可行集成场景，不应写成已证实用户需求。Andorra 实样本的字段级全量差分已完成，但项目需求证据仍是成熟格式实践和接口集成推断；直接发现维护中的 PBF reader 时应先比较协作或扩展方案。
+需求以 OSM PBF schema、Geofabrik 区域数据分发及成熟工具的提取/导出工作流为依据，不声称已访谈用户。三个实际闭环为：地图作者输入区域 PBF、筛 `amenity=cafe`、得到点 GeoJSON；GIS 分析者输入同一区域、筛住宅道路并裁剪矩形、得到可用线 GeoJSON；关系数据整理者筛 `type=route`、得到保留成员类型/ID/角色的 JSONL。相较只提供 protobuf wire、MVT 或边列表路由，用户无需自行实现 PBF framing、DenseNodes/delta、字符串表、坐标映射和节点引用解析。
+
+本次完成标准是 raw/zlib 文件解码、受限且可诊断的实体模型、节点索引与线段裁剪、独立标签/类型过滤、JSONL/GeoJSON 输出以及三个实际文件流程。已通过 529,381 条实体的独立解析器逐字段差分（0 条记录差异），三流程得到 37 个点、219 条有效线、81 个关系；输入摘要、许可、复现步骤和特殊退化 Way 见 [验收说明](../validation.md)。独立解析器和流程证据满足本次实现验收；不将其外推为市场验证、完整格式兼容或真实用户部署。
+
+2026-11-21 再次执行 `moon search osm/openstreetmap/pbf --limit 100`：结果分别为 2/0/2，仍为膜分离、edge-list 路由、通用 wire 与 MVT 项目，未出现记录范围内的直接 OSM PBF 实体读取替代。GitHub 与 MoonCakes 索引均有边界；源码对照只覆盖表列文件与行为，没有穷尽全部历史。当前范围未发现成熟直接替代；发现维护中的同任务实现时，应重新评估扩展协作。
