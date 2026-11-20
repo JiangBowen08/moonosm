@@ -102,8 +102,21 @@ fn StringBuilder::write_json_string(
       '\n' => self.write_string("\\n")
       '\r' => self.write_string("\\r")
       '\t' => self.write_string("\\t")
-      c => self.write_char(c)
+      c =>
+        if c.to_int() < 0x20 {
+          self.write_string("\\u00")
+          self.write_hex_byte(c.to_int())
+        } else {
+          self.write_char(c)
+        }
     }
   }
   self.write_char('"')
+}
+
+///|
+fn StringBuilder::write_hex_byte(self : StringBuilder, value : Int32) -> Unit {
+  let digits = "0123456789abcdef"
+  self.write_char(digits[value >> 4].to_char().unwrap())
+  self.write_char(digits[value & 0x0f].to_char().unwrap())
 }

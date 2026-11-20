@@ -192,7 +192,37 @@ test "JSONL escapes embedded control characters" {
   ])
   let line = @moonosm.encode_jsonl([entity])
   assert_true(line.contains("a\\\"b\\\\c\\n"))
+  let control = @moonosm.Way(id=10L, refs=[], tags=[
+    @moonosm.Tag::{ key: "control", value: "\u{0001}\u{001f}", },
+  ])
+  assert_true(@moonosm.encode_jsonl([control]).contains("\\u0001\\u001f"))
   assert_true(line.contains("\"refs\":[1,2]"))
+}
+
+///|
+test "simple selection rejects invalid longitude bounds" {
+  let node = @moonosm.Node(
+    id=1L,
+    coordinate=@moonosm.Coordinate::{
+      lat_nanodegrees: 0L,
+      lon_nanodegrees: 0L,
+    },
+    tags=[],
+  )
+  let query = @moonosm.Query::{
+    include_nodes: true,
+    include_ways: true,
+    include_relations: true,
+    bounds: Some(@moonosm.Bounds::{
+      south: -1.0,
+      west: 10.0,
+      north: 1.0,
+      east: -10.0,
+    }),
+    required_tags: [],
+  }
+  assert_true(!query.bounds.unwrap().valid())
+  assert_eq(@moonosm.select_entities([node], query).length(), 0)
 }
 
 ///|

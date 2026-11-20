@@ -6,6 +6,9 @@ pub fn select_entities(
   entities : Array[Entity],
   query : Query,
 ) -> Array[Entity] {
+  if query.bounds is Some(bounds) && !bounds.valid() {
+    return []
+  }
   let output : Array[Entity] = []
   for entity in entities {
     if !query_includes_type(entity, query) {

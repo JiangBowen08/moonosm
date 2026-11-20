@@ -2,9 +2,9 @@
 
 MoonOSM 是 MoonBit 编写的 OpenStreetMap Protocolbuffer Binary Format（OSM PBF）读取库。它将带边界检查的 PBF 文件帧和 Blob 解码为节点、Way、Relation 与标签，提供类型/标签/范围筛选，并可将节点和 Way 导出为 JSONL 或 GeoJSON。
 
-## 状态
+## 环境与安装
 
-当前源码对应 manifest 版本 `0.1.0`，截至 2026-11-20 尚未发布到 GitHub 或 MoonCakes，因此此版本目前不能通过 `moon add` 安装。项目要求使用 MoonBit `0.1.20261119` 或更新版本；zlib 解码使用该工具链中的实验性 `moonbitlang/core/compress/zlib` API。
+项目 manifest 版本为 `0.1.0`，使用 MoonBit `0.1.20261119` 或更新版本。zlib 解码依赖工具链中的实验性 `moonbitlang/core/compress/zlib` API。源码检出后可在其他 MoonBit 模块中依赖本地包；公开版本发布后，模块坐标为 `JiangBowen08/moonosm@0.1.0`。
 
 ## 能力与边界
 
@@ -27,10 +27,10 @@ MoonOSM 是 MoonBit 编写的 OpenStreetMap Protocolbuffer Binary Format（OSM P
 moon run examples/decode
 ```
 
-wasm 文件示例读取真实 `.osm.pbf` 路径并输出实体数量：
+文件示例将完整 `.osm.pbf` 解码后导出为 UTF-8 JSONL，并在标准输出报告各类实体数量：
 
 ```powershell
-moon run --target wasm examples/decode_file -- path/to/region.osm.pbf
+moon run --target wasm examples/decode_file -- path/to/region.osm.pbf region.jsonl
 ```
 
 预期输出：
@@ -49,7 +49,7 @@ match @moonosm.decode_file(pbf_bytes, limits) {
 }
 ```
 
-调用者可用 `NodeIndex::from_entities` 和 `select_entities_with_geometry` 执行含 Way 线段的范围筛选；对选中的完整 Way 调用 `resolve_way_geometry`、`clip_way_geometry` 获得边界内的连续线段，再将其交给目标格式序列化。`bounds_of_entities` 汇总输入节点和 Way 的经纬度范围；关系成员不会被当作已解析几何，Way 引用缺失节点时返回错误。范围无效或 Way 引用节点缺失时，裁剪 API 返回错误；无效范围也会使几何筛选返回空结果。当前仓库的端到端测试构造 OSMHeader 与 zlib OSMData 帧，验证文件解码、实体输出及损坏压缩流拒绝路径，并测试线段裁剪的边界结果。
+调用者可用 `NodeIndex::from_entities` 和 `select_entities_with_geometry` 执行含 Way 线段的范围筛选；对选中的完整 Way 调用 `resolve_way_geometry`、`clip_way_geometry` 获得边界内的连续线段，再将其交给目标格式序列化。`bounds_of_entities` 汇总输入节点和 Way 的经纬度范围；关系成员不会被当作已解析几何，Way 引用缺失节点时返回错误。范围无效或 Way 引用节点缺失时，裁剪 API 返回错误；无效范围也会使筛选返回空结果。完整文件解码和示例在 wasm、wasm-gc、js、native 目标上使用，文件 I/O 能力受目标运行时支持约束。端到端测试构造 OSMHeader 与 zlib OSMData 帧，验证文件解码、实体输出及损坏压缩流拒绝路径，并测试线段裁剪的边界结果。
 
 ## 检查与构建
 

@@ -131,6 +131,7 @@ pub fn Bounds::valid(self : Bounds) -> Bool {
   self.south <= self.north &&
   self.west >= -180.0 &&
   self.west <= 180.0 &&
+  self.west <= self.east &&
   self.east >= -180.0 &&
   self.east <= 180.0
 }
