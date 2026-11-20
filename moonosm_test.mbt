@@ -473,3 +473,15 @@ test "geometry selection rejects invalid bounds including relations" {
     0,
   )
 }
+
+///|
+test "file decoder rejects a repeated header block" {
+  let file : Array[Byte] = []
+  let blob = b"\x0a\x00"
+  push_frame(file, "OSMHeader", blob)
+  push_frame(file, "OSMHeader", blob)
+  assert_true(
+    @moonosm.decode_file(Bytes::from_array(file), @moonosm.Limits::default())
+    is Err(_),
+  )
+}

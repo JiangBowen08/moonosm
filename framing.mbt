@@ -297,6 +297,11 @@ pub fn decode_file(
   let entities : Array[Entity] = []
   for index in 1..<blocks.length() {
     let block = blocks[index]
+    if block.kind == "OSMHeader" {
+      return Err(
+        InvalidHeader(offset=block.offset, reason="duplicate OSMHeader"),
+      )
+    }
     if block.kind == "OSMData" {
       let raw = match decode_raw_blob(block.payload, limits) {
         Ok(value) => value
