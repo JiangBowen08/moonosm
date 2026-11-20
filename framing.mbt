@@ -307,7 +307,11 @@ pub fn decode_file(
         Ok(value) => value
         Err(problem) => return Err(problem)
       }
-      let decoded = match decode_primitive_block(raw, limits) {
+      let block_limits = Limits::{
+        ..limits,
+        max_entities: limits.max_entities - entities.length(),
+      }
+      let decoded = match decode_primitive_block(raw, block_limits) {
         Ok(value) => value
         Err(problem) => return Err(problem)
       }

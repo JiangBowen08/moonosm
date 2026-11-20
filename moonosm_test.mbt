@@ -261,6 +261,23 @@ test "rejects PrimitiveBlock entity budget exhaustion" {
 }
 
 ///|
+test "file entity budget is shared across primitive blocks" {
+  let block = b"\x0a\x02\x0a\x00\x12\x08\x0a\x06\x08\x02\x40\x00\x48\x00"
+  let file : Array[Byte] = []
+  push_frame(file, "OSMHeader", b"\x0a\x00")
+  push_frame(file, "OSMData", make_zlib_blob(block, block.length()))
+  push_frame(file, "OSMData", make_zlib_blob(block, block.length()))
+  let limits = @moonosm.Limits::{
+    ..@moonosm.Limits::default(),
+    max_entities: 1,
+  }
+  assert_true(
+    @moonosm.decode_file(Bytes::from_array(file), limits)
+    is Err(@moonosm.LimitExceeded(limit="entities", value=1)),
+  )
+}
+
+///|
 test "resolves ways and counts duplicate node IDs deterministically" {
   let first = @moonosm.Node(
     id=11L,

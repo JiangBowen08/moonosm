@@ -121,6 +121,14 @@ fn decode_primitive_group(
   let entities : Array[Entity] = []
   while !reader.at_end() {
     let field_tag = reader.read_tag()
+    if (
+        field_tag == proto_tag(1, 2) ||
+        field_tag == proto_tag(3, 2) ||
+        field_tag == proto_tag(4, 2)
+      ) &&
+      entities.length() >= remaining {
+      return Err(LimitExceeded(limit="entities", value=remaining + 1))
+    }
     if field_tag == proto_tag(1, 2) {
       match
         decode_node(
@@ -260,10 +268,12 @@ fn decode_dense_nodes(
       reader.skip(field_tag & 7)
     }
   }
+  if ids.length() > remaining {
+    return Err(LimitExceeded(limit="entities", value=ids.length()))
+  }
   if reader.failed ||
     ids.length() != lats.length() ||
-    ids.length() != lons.length() ||
-    ids.length() > remaining {
+    ids.length() != lons.length() {
     Err(InvalidPrimitive(reason="inconsistent or oversized DenseNodes arrays"))
   } else {
     let output : Array[Entity] = []

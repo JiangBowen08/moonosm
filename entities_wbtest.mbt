@@ -64,3 +64,15 @@ test "way reference deltas cannot silently wrap" {
   assert_true(checked_add(-9223372036854775807L - 1L, -1L) is Err(_))
   assert_eq(checked_add(-5L, 4L).unwrap(), -1L)
 }
+
+///|
+test "entity budget refuses construction before decoding the next entity" {
+  assert_true(
+    decode_primitive_group(b"\x0a\x00", [""], 100, 0L, 0L, 0)
+    is Err(LimitExceeded(limit="entities", value=1)),
+  )
+  assert_true(
+    decode_dense_nodes(b"\x08\x02\x40\x00\x48\x00", [""], 100, 0L, 0L, 0)
+    is Err(LimitExceeded(limit="entities", value=1)),
+  )
+}
