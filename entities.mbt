@@ -279,7 +279,12 @@ fn decode_dense_nodes(
         }
         kv += 2
       }
-      if kv < key_values.length() {
+      if key_values.length() > 0 {
+        if kv >= key_values.length() {
+          return Err(
+            InvalidPrimitive(reason="missing DenseNodes tag delimiter"),
+          )
+        }
         kv += 1
       }
       output.push(

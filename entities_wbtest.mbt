@@ -22,3 +22,20 @@ test "granularity does not wrap from large protobuf integer" {
     is Err(_),
   )
 }
+
+///|
+test "DenseNodes requires one delimiter per tagged node" {
+  let strings = ["", "k", "v"]
+  assert_true(
+    decode_dense_nodes(
+      b"\x08\x02\x40\x00\x48\x00\x50\x01\x50\x02", strings, 100, 0L, 0L, 10,
+    )
+    is Err(_),
+  )
+  assert_eq(
+    decode_dense_nodes(b"\x08\x02\x40\x00\x48\x00", strings, 100, 0L, 0L, 10)
+    .unwrap()
+    .length(),
+    1,
+  )
+}
