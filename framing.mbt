@@ -24,7 +24,12 @@ fn parse_blob_header(
     if tag == proto_tag(1, 2) {
       kind = reader.read_string()
     } else if tag == proto_tag(3, 0) {
-      data_size = reader.read_varint().to_int()
+      let size = reader.read_varint()
+      if size < 0L || size > 0x7fffffffL {
+        reader.failed = true
+      } else {
+        data_size = size.to_int()
+      }
     } else {
       reader.skip(tag & 7)
     }
