@@ -16,6 +16,8 @@ pub fn decode_raw_blob(Bytes, Limits) -> Result[Bytes, OsmError]
 
 pub fn encode_geojson(Array[Entity], NodeIndex) -> String
 
+pub fn encode_geojson_in_bounds(Array[Entity], NodeIndex, Bounds) -> Result[String, OsmError]
+
 pub fn encode_jsonl(Array[Entity]) -> String
 
 pub fn read_blocks(Bytes, Limits) -> Result[Array[FramedBlock], OsmError]

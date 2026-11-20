@@ -15,9 +15,9 @@ MoonOSM 是 MoonBit 编写的 OpenStreetMap Protocolbuffer Binary Format（OSM P
 - 依据实体类型、精确标签、节点范围或 Way 线段与范围的相交关系筛选；提供筛选统计与节点 ID 索引。
 - 通过 `bounds_of_entities` 汇总节点与完整 Way 的数据集范围；遇到缺失节点引用时报错，不推测关系几何。
 - 通过 `clip_way_geometry` 将完整 Way 裁剪为矩形范围内的连续线段；相离的片段分别返回，不把范围外坐标留在裁剪结果中。
-- 输出节点 Point 与 Way LineString GeoJSON，或以 JSONL 输出实体。
+- 输出节点 Point 与 Way LineString GeoJSON，或以 JSONL 输出实体；`encode_geojson_in_bounds` 可直接裁剪边界内节点与相交 Way，并为不连续片段输出 MultiLineString。
 
-完整文件入口接收内存中的 `Bytes`，当前会将解码实体保存在内存中，不提供文件系统/命令行读取或增量流式 API。Way 引用缺失时保留缺失 ID，不推测坐标；含缺失节点的 Way 不通过几何范围筛选，也不会输出 GeoJSON。跨越反经线的范围不受支持。闭合 Way 不会自动解释为面，Relation 不推导多边形或多部件几何；GeoJSON 目前仅输出 Point 和 LineString。
+完整文件入口接收内存中的 `Bytes`，当前会将解码实体保存在内存中，不提供文件系统/命令行读取或增量流式 API。Way 引用缺失时保留缺失 ID，不推测坐标；含缺失节点的 Way 不通过几何范围筛选，也不会输出 GeoJSON。跨越反经线的范围不受支持。闭合 Way 不会自动解释为面，Relation 不推导多边形几何；GeoJSON 输出 Point、LineString 和裁剪分段产生的 MultiLineString。
 
 ## 示例
 
@@ -50,6 +50,23 @@ match @moonosm.decode_file(pbf_bytes, limits) {
 ```
 
 调用者可用 `NodeIndex::from_entities` 和 `select_entities_with_geometry` 执行含 Way 线段的范围筛选；对选中的完整 Way 调用 `resolve_way_geometry`、`clip_way_geometry` 获得边界内的连续线段，再将其交给目标格式序列化。`bounds_of_entities` 汇总输入节点和 Way 的经纬度范围；关系成员不会被当作已解析几何，Way 引用缺失节点时返回错误。范围无效或 Way 引用节点缺失时，裁剪 API 返回错误；无效范围也会使筛选返回空结果。完整文件解码和示例在 wasm、wasm-gc、js、native 目标上使用，文件 I/O 能力受目标运行时支持约束。端到端测试构造 OSMHeader 与 zlib OSMData 帧，验证文件解码、实体输出及损坏压缩流拒绝路径，并测试线段裁剪的边界结果。
+
+要直接生成限定范围的 GeoJSON，可传入原实体、同一实体集构建的节点索引和经纬度边界：
+
+```moonbit
+let bounds = @moonosm.Bounds::{
+  south: 41.3,
+  west: 1.4,
+  north: 42.0,
+  east: 1.8,
+}
+match @moonosm.encode_geojson_in_bounds(entities, node_index, bounds) {
+  Ok(feature_collection) => println(feature_collection)
+  Err(problem) => println(problem.to_string())
+}
+```
+
+输出只包含范围内的 Node，以及与矩形相交并被裁剪到边界上的 Way；若一条 Way 被裁成互不相连的片段，几何类型为 `MultiLineString`。任何输入 Way 缺少节点引用都会返回错误，避免输出看似完整但实际被截断的线。Relation 几何不推导。GeoJSON 采用 WGS84 经度、纬度坐标顺序。
 
 ## 检查与构建
 

@@ -434,6 +434,57 @@ test "clips a crossing way into an in-bounds line" {
 }
 
 ///|
+test "exports clipped GeoJSON with visible node and crossing way" {
+  let nodes = [
+    @moonosm.Node(
+      id=1L,
+      coordinate=@moonosm.Coordinate::{
+        lat_nanodegrees: 0L,
+        lon_nanodegrees: -2000000000L,
+      },
+      tags=[],
+    ),
+    @moonosm.Node(
+      id=2L,
+      coordinate=@moonosm.Coordinate::{
+        lat_nanodegrees: 500000000L,
+        lon_nanodegrees: 0L,
+      },
+      tags=[@moonosm.Tag::{ key: "name", value: "inside", }],
+    ),
+    @moonosm.Node(
+      id=3L,
+      coordinate=@moonosm.Coordinate::{
+        lat_nanodegrees: 0L,
+        lon_nanodegrees: 2000000000L,
+      },
+      tags=[],
+    ),
+  ]
+  let way = @moonosm.Way(id=7L, refs=[1L, 2L, 3L], tags=[])
+  let index = @moonosm.NodeIndex::from_entities(nodes)
+  let bounds = @moonosm.Bounds::{
+    south: -1.0,
+    west: -1.0,
+    north: 1.0,
+    east: 1.0,
+  }
+  let json = @moonosm.encode_geojson_in_bounds(
+    [nodes[0], nodes[1], nodes[2], way],
+    index,
+    bounds,
+  ).unwrap()
+  assert_true(json.has_prefix("{\"type\":\"FeatureCollection\",\"features\":["))
+  assert_true(json.contains("\"osm_id\":2"))
+  assert_true(json.contains("\"osm_id\":7"))
+  assert_true(!json.contains("\"osm_id\":1"))
+  assert_true(!json.contains("\"osm_id\":3"))
+  assert_true(json.contains("\"type\":\"LineString\""))
+  assert_true(json.contains("\"tags\":{}},\"geometry\":"))
+  assert_true(json.contains("\"coordinates\":[[-1,0.25],[0,0.5],[1,0.25]]"))
+}
+
+///|
 test "clipping rejects incomplete geometry and invalid bounds" {
   let node = @moonosm.Node(
     id=1L,

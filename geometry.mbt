@@ -370,6 +370,105 @@ pub fn encode_geojson(entities : Array[Entity], index : NodeIndex) -> String {
 }
 
 ///|
+/// Export in-bounds nodes and clipped ways as a GeoJSON FeatureCollection.
+/// Missing way references are errors so a partial line is never implied.
+pub fn encode_geojson_in_bounds(
+  entities : Array[Entity],
+  index : NodeIndex,
+  bounds : Bounds,
+) -> Result[String, OsmError] {
+  if !bounds.valid() {
+    return Err(InvalidPrimitive(reason="GeoJSON bounds are invalid"))
+  }
+  let builder = StringBuilder()
+  builder.write_string("{\"type\":\"FeatureCollection\",\"features\":[")
+  let mut emitted = 0
+  for entity in entities {
+    match entity {
+      Node(id~, coordinate~, tags~) =>
+        if coordinate_in_bounds(coordinate, bounds) {
+          if emitted > 0 {
+            builder.write_char(',')
+          }
+          write_geojson_feature_start(builder, "node", id, tags)
+          builder.write_string(
+            "\"geometry\":{\"type\":\"Point\",\"coordinates\":[",
+          )
+          write_geojson_coordinate(builder, coordinate)
+          builder.write_string("]}}")
+          emitted += 1
+        }
+      Way(id~, refs~, tags~) => {
+        let geometry = match
+          resolve_way_geometry(Way(id~, refs~, tags~), index) {
+          Ok(value) => value
+          Err(problem) => return Err(problem)
+        }
+        let lines = match clip_way_geometry(geometry, bounds) {
+          Ok(value) => value
+          Err(problem) => return Err(problem)
+        }
+        if lines.length() > 0 {
+          if emitted > 0 {
+            builder.write_char(',')
+          }
+          write_geojson_feature_start(builder, "way", id, tags)
+          if lines.length() == 1 {
+            builder.write_string(
+              "\"geometry\":{\"type\":\"LineString\",\"coordinates\":[",
+            )
+            write_geojson_line(builder, lines[0])
+            builder.write_string("]}}")
+          } else {
+            builder.write_string(
+              "\"geometry\":{\"type\":\"MultiLineString\",\"coordinates\":[",
+            )
+            for line_index, line in lines {
+              if line_index > 0 {
+                builder.write_char(',')
+              }
+              builder.write_char('[')
+              write_geojson_line(builder, line)
+              builder.write_char(']')
+            }
+            builder.write_string("]}}")
+          }
+          emitted += 1
+        }
+      }
+      Relation(..) => ()
+    }
+  }
+  builder.write_string("]}")
+  Ok(builder.to_string())
+}
+
+///|
+fn write_geojson_line(
+  builder : StringBuilder,
+  line : Array[Coordinate],
+) -> Unit {
+  for coordinate_index, coordinate in line {
+    if coordinate_index > 0 {
+      builder.write_char(',')
+    }
+    builder.write_char('[')
+    write_geojson_coordinate(builder, coordinate)
+    builder.write_char(']')
+  }
+}
+
+///|
+fn write_geojson_coordinate(
+  builder : StringBuilder,
+  coordinate : Coordinate,
+) -> Unit {
+  builder.write_string(coordinate.longitude().to_string())
+  builder.write_char(',')
+  builder.write_string(coordinate.latitude().to_string())
+}
+
+///|
 fn write_geojson_feature_start(
   builder : StringBuilder,
   kind : String,
@@ -382,5 +481,5 @@ fn write_geojson_feature_start(
   builder.write_string(id.to_string())
   builder.write_string(",\"tags\":")
   encode_tags_json(builder, tags)
-  builder.write_char('}')
+  builder.write_string("},")
 }
