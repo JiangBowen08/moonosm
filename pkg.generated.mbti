@@ -1,0 +1,153 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "JiangBowen08/moonosm"
+
+// Values
+pub fn bounds_of_entities(Array[Entity], NodeIndex) -> Result[Bounds?, OsmError]
+
+pub fn clip_way_geometry(WayGeometry, Bounds) -> Result[Array[Array[Coordinate]], OsmError]
+
+pub fn decode_file(Bytes, Limits) -> Result[OsmDocument, OsmError]
+
+pub fn decode_header(Bytes) -> Result[HeaderInfo, OsmError]
+
+pub fn decode_primitive_block(Bytes, Limits) -> Result[Array[Entity], OsmError]
+
+pub fn decode_raw_blob(Bytes, Limits) -> Result[Bytes, OsmError]
+
+pub fn encode_geojson(Array[Entity], NodeIndex) -> String
+
+pub fn encode_jsonl(Array[Entity]) -> String
+
+pub fn read_blocks(Bytes, Limits) -> Result[Array[FramedBlock], OsmError]
+
+pub fn resolve_way_geometry(Entity, NodeIndex) -> Result[WayGeometry, OsmError]
+
+pub fn select_entities(Array[Entity], Query) -> Array[Entity]
+
+pub fn select_entities_with_geometry(Array[Entity], Query, NodeIndex) -> Array[Entity]
+
+pub fn summarize_selection(Array[Entity], Array[Entity], Query) -> Summary
+
+pub fn validate_required_features(HeaderInfo) -> Result[Unit, OsmError]
+
+// Errors
+pub(all) suberror OsmError {
+  Truncated(offset~ : Int32)
+  HeaderTooLarge(size~ : Int32)
+  BlobTooLarge(size~ : Int32)
+  InvalidHeader(offset~ : Int32, reason~ : String)
+  UnsupportedCompression(kind~ : String)
+  InvalidPayload(offset~ : Int32, reason~ : String)
+  InvalidPrimitive(reason~ : String)
+  LimitExceeded(limit~ : String, value~ : Int32)
+}
+
+// Types and methods
+pub(all) struct Bounds {
+  south : Double
+  west : Double
+  north : Double
+  east : Double
+}
+pub fn Bounds::valid(Self) -> Bool
+
+pub(all) struct Coordinate {
+  lat_nanodegrees : Int64
+  lon_nanodegrees : Int64
+}
+pub fn Coordinate::latitude(Self) -> Double
+pub fn Coordinate::longitude(Self) -> Double
+
+pub(all) enum Entity {
+  Node(id~ : Int64, coordinate~ : Coordinate, tags~ : Array[Tag])
+  Way(id~ : Int64, refs~ : Array[Int64], tags~ : Array[Tag])
+  Relation(id~ : Int64, members~ : Array[RelationMember], tags~ : Array[Tag])
+}
+pub fn Entity::id(Self) -> Int64
+pub fn Entity::kind_name(Self) -> String
+
+pub(all) struct FramedBlock {
+  kind : String
+  payload : Bytes
+  offset : Int32
+}
+
+pub(all) struct HeaderInfo {
+  required_features : Array[String]
+  optional_features : Array[String]
+  writing_program : String
+  source : String
+}
+
+pub(all) struct Limits {
+  max_header_bytes : Int32
+  max_blob_bytes : Int32
+  max_raw_bytes : Int32
+  max_string_bytes : Int32
+  max_entities : Int32
+}
+pub fn Limits::default() -> Self
+
+pub(all) enum MemberKind {
+  NodeMember
+  WayMember
+  RelationMember
+}
+
+pub struct NodeIndex {
+  coordinates : Map[Int64, Coordinate]
+  duplicate_ids : Int32
+}
+pub fn NodeIndex::coordinate(Self, Int64) -> Coordinate?
+pub fn NodeIndex::duplicate_count(Self) -> Int32
+pub fn NodeIndex::from_entities(Array[Entity]) -> Self
+pub fn NodeIndex::node_count(Self) -> Int32
+
+pub(all) struct OsmDocument {
+  header : HeaderInfo
+  entities : Array[Entity]
+}
+
+pub(all) struct Query {
+  include_nodes : Bool
+  include_ways : Bool
+  include_relations : Bool
+  bounds : Bounds?
+  required_tags : Array[Tag]
+}
+pub fn Query::all() -> Self
+
+pub(all) struct RelationMember {
+  kind : MemberKind
+  id : Int64
+  role : String
+}
+
+pub(all) struct Summary {
+  seen_nodes : Int32
+  seen_ways : Int32
+  seen_relations : Int32
+  emitted_nodes : Int32
+  emitted_ways : Int32
+  emitted_relations : Int32
+  rejected_by_type : Int32
+  rejected_by_bounds : Int32
+  rejected_by_tags : Int32
+}
+pub fn Summary::empty() -> Self
+
+pub(all) struct Tag {
+  key : String
+  value : String
+}
+
+pub(all) struct WayGeometry {
+  way_id : Int64
+  coordinates : Array[Coordinate]
+  missing_node_ids : Array[Int64]
+  closed : Bool
+}
+
+// Type aliases
+
+// Traits

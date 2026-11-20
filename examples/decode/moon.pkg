@@ -1,0 +1,5 @@
+import {
+  "JiangBowen08/moonosm",
+}
+
+pkgtype(kind: "executable")

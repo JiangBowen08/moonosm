@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  moonbit:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [wasm, wasm-gc, js, native]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: moonbitlang/setup-moonbit@v1
+      - name: Check formatting
+        run: moon fmt --check
+      - name: Strict check
+        # Keep the public Result-based parsing API; deny every other warning.
+        run: moon check --deny-warn --warn-list=-78 --target ${{ matrix.target }}
+      - name: Test
+        run: moon test --target ${{ matrix.target }}
+      - name: Build
+        run: moon build --target ${{ matrix.target }}
