@@ -200,7 +200,7 @@ fn decode_node(
   while !reader.at_end() {
     let field_tag = reader.read_tag()
     if field_tag == proto_tag(1, 0) {
-      id = Some(reader.read_varint())
+      id = Some(read_sint64(reader))
     } else if field_tag == proto_tag(2, 2) || field_tag == proto_tag(2, 0) {
       read_indices_field(reader, field_tag, keys)
     } else if field_tag == proto_tag(3, 2) || field_tag == proto_tag(3, 0) {

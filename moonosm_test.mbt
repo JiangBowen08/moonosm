@@ -78,7 +78,7 @@ test "rejects truncated protobuf length and malformed varint" {
 test "decodes bounded zlib Blob data and checks raw_size" {
   let raw = Bytes::from_array([
     b'\x0a', b'\x02', b'\x0a', b'\x00', b'\x12', b'\x08', b'\x0a', b'\x06', b'\x08',
-    b'\x01', b'\x40', b'\x00', b'\x48', b'\x00',
+    b'\x02', b'\x40', b'\x00', b'\x48', b'\x00',
   ])
   let blob = make_zlib_blob(raw, 14)
   assert_eq(
@@ -108,7 +108,7 @@ test "decodes bounded zlib Blob data and checks raw_size" {
 test "decodes a framed PBF file with a zlib OSMData block" {
   let primitive_block = Bytes::from_array([
     b'\x0a', b'\x02', b'\x0a', b'\x00', b'\x12', b'\x08', b'\x0a', b'\x06', b'\x08',
-    b'\x01', b'\x40', b'\x00', b'\x48', b'\x00',
+    b'\x02', b'\x40', b'\x00', b'\x48', b'\x00',
   ])
   let file : Array[Byte] = []
   push_frame(file, "OSMHeader", Bytes::from_array([b'\x0a', b'\x00']))
@@ -233,7 +233,7 @@ test "simple selection rejects invalid longitude bounds" {
 test "decodes a PrimitiveBlock node with empty string table entry" {
   let block = Bytes::from_array([
     b'\x0a', b'\x02', b'\x0a', b'\x00', b'\x12', b'\x08', b'\x0a', b'\x06', b'\x08',
-    b'\x01', b'\x40', b'\x00', b'\x48', b'\x00',
+    b'\x02', b'\x40', b'\x00', b'\x48', b'\x00',
   ])
   let entities = @moonosm.decode_primitive_block(
     block,
@@ -248,7 +248,7 @@ test "decodes a PrimitiveBlock node with empty string table entry" {
 test "rejects PrimitiveBlock entity budget exhaustion" {
   let block = Bytes::from_array([
     b'\x0a', b'\x02', b'\x0a', b'\x00', b'\x12', b'\x08', b'\x0a', b'\x06', b'\x08',
-    b'\x01', b'\x40', b'\x00', b'\x48', b'\x00',
+    b'\x02', b'\x40', b'\x00', b'\x48', b'\x00',
   ])
   let limits = @moonosm.Limits::{
     max_header_bytes: 1024,

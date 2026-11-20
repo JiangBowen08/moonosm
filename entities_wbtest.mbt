@@ -76,3 +76,16 @@ test "entity budget refuses construction before decoding the next entity" {
     is Err(LimitExceeded(limit="entities", value=1)),
   )
 }
+
+///|
+test "ordinary Node IDs use signed zigzag rather than Way int64 encoding" {
+  assert_eq(
+    decode_node(b"\x08\x54\x40\x00\x48\x00", [""], 100, 0L, 0L).unwrap().id(),
+    42L,
+  )
+  assert_eq(
+    decode_node(b"\x08\x53\x40\x00\x48\x00", [""], 100, 0L, 0L).unwrap().id(),
+    -42L,
+  )
+  assert_eq(decode_way(b"\x08\x2a", [""]).unwrap().id(), 42L)
+}
