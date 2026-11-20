@@ -90,6 +90,10 @@ pub fn summarize_selection(
   let mut rejected_by_type = 0
   let mut rejected_by_bounds = 0
   let mut rejected_by_tags = 0
+  let invalid_bounds = match query.bounds {
+    Some(bounds) => !bounds.valid()
+    None => false
+  }
   for entity in input {
     match entity {
       Node(..) => seen_nodes += 1
@@ -100,6 +104,8 @@ pub fn summarize_selection(
       rejected_by_type += 1
     } else if !query_matches_tags(entity, query.required_tags) {
       rejected_by_tags += 1
+    } else if invalid_bounds {
+      rejected_by_bounds += 1
     } else {
       match entity {
         Node(coordinate~, ..) =>

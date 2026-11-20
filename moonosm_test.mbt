@@ -223,6 +223,10 @@ test "simple selection rejects invalid longitude bounds" {
   }
   assert_true(!query.bounds.unwrap().valid())
   assert_eq(@moonosm.select_entities([node], query).length(), 0)
+  let way = @moonosm.Way(id=2L, refs=[], tags=[])
+  let relation = @moonosm.Relation(id=3L, members=[], tags=[])
+  let summary = @moonosm.summarize_selection([node, way, relation], [], query)
+  assert_eq(summary.rejected_by_bounds, 3)
 }
 
 ///|
