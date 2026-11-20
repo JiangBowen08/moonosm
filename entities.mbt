@@ -13,7 +13,11 @@ pub fn decode_primitive_block(
   while !reader.at_end() {
     let field_tag = reader.read_tag()
     if field_tag == proto_tag(1, 2) {
-      read_string_table(reader.read_bytes(), strings)
+      match
+        read_string_table(reader.read_bytes(), strings, limits.max_string_bytes) {
+        Ok(_) => ()
+        Err(problem) => return Err(problem)
+      }
     } else if field_tag == proto_tag(2, 2) {
       groups.push(reader.read_bytes())
     } else if field_tag == proto_tag(17, 0) {
@@ -26,7 +30,10 @@ pub fn decode_primitive_block(
       reader.skip(field_tag & 7)
     }
   }
-  if reader.failed || strings.length() == 0 || granularity <= 0 {
+  if reader.failed ||
+    strings.length() == 0 ||
+    strings[0] != "" ||
+    granularity <= 0 {
     Err(InvalidPrimitive(reason="invalid PrimitiveBlock metadata"))
   } else {
     let entities : Array[Entity] = []
@@ -55,15 +62,31 @@ pub fn decode_primitive_block(
 }
 
 ///|
-fn read_string_table(data : Bytes, strings : Array[String]) -> Unit {
+fn read_string_table(
+  data : Bytes,
+  strings : Array[String],
+  max_bytes : Int32,
+) -> Result[Unit, OsmError] {
   let reader = ProtoReader::new(data)
   while !reader.at_end() {
     let field_tag = reader.read_tag()
     if field_tag == proto_tag(1, 2) {
-      strings.push(reader.read_string())
+      let bytes = reader.read_bytes()
+      if bytes.length() > max_bytes {
+        return Err(LimitExceeded(limit="string bytes", value=bytes.length()))
+      }
+      let text = @utf8.decode(bytes[:]) catch {
+        _ => return Err(InvalidPrimitive(reason="invalid UTF-8 in StringTable"))
+      }
+      strings.push(text)
     } else {
       reader.skip(field_tag & 7)
     }
+  }
+  if reader.failed {
+    Err(InvalidPrimitive(reason="malformed StringTable"))
+  } else {
+    Ok(())
   }
 }
 
