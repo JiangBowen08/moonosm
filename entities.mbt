@@ -21,7 +21,12 @@ pub fn decode_primitive_block(
     } else if field_tag == proto_tag(2, 2) {
       groups.push(reader.read_bytes())
     } else if field_tag == proto_tag(17, 0) {
-      granularity = reader.read_varint().to_int()
+      let value = reader.read_varint()
+      if value <= 0L || value > 0x7fffffffL {
+        reader.failed = true
+      } else {
+        granularity = value.to_int()
+      }
     } else if field_tag == proto_tag(19, 0) {
       lat_offset = reader.read_varint()
     } else if field_tag == proto_tag(20, 0) {
