@@ -391,7 +391,7 @@ fn decode_relation(
 ///|
 fn read_sint64(reader : ProtoReader) -> Int64 {
   let encoded = reader.read_varint()
-  (encoded >> 1) ^ -(encoded & 1L)
+  ((encoded >> 1) & 0x7fffffffffffffffL) ^ -(encoded & 1L)
 }
 
 ///|

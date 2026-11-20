@@ -18,3 +18,16 @@ test "overflowing and unterminated varints are rejected" {
   truncated.read_varint() |> ignore
   assert_true(truncated.failed)
 }
+
+///|
+test "zigzag preserves full signed 64-bit endpoints" {
+  assert_eq(
+    read_sint64(ProtoReader::new(b"\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01")),
+    -9223372036854775807L - 1L,
+  )
+  assert_eq(
+    read_sint64(ProtoReader::new(b"\xfe\xff\xff\xff\xff\xff\xff\xff\xff\x01")),
+    9223372036854775807L,
+  )
+  assert_eq(read_sint64(ProtoReader::new(b"\x01")), -1L)
+}
