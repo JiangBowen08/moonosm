@@ -87,6 +87,7 @@ pub(all) struct Limits {
   max_entities : Int32
 }
 pub fn Limits::default() -> Self
+pub fn Limits::validate(Self) -> Result[Unit, OsmError]
 
 pub(all) enum MemberKind {
   NodeMember

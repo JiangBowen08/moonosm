@@ -182,3 +182,19 @@ pub fn Summary::empty() -> Summary {
     rejected_by_tags: 0,
   }
 }
+
+///|
+/// Validate resource ceilings before consuming untrusted bytes. Zero entity and
+/// string budgets are allowed; frame/blob/output budgets must be positive.
+pub fn Limits::validate(self : Limits) -> Result[Unit, OsmError] {
+  if self.max_header_bytes <= 0 ||
+    self.max_header_bytes > 65536 ||
+    self.max_blob_bytes <= 0 ||
+    self.max_raw_bytes <= 0 ||
+    self.max_string_bytes < 0 ||
+    self.max_entities < 0 {
+    Err(InvalidPrimitive(reason="invalid decode limits"))
+  } else {
+    Ok(())
+  }
+}

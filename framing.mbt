@@ -50,6 +50,10 @@ pub fn read_blocks(
   data : Bytes,
   limits : Limits,
 ) -> Result[Array[FramedBlock], OsmError] {
+  match limits.validate() {
+    Ok(_) => ()
+    Err(e) => return Err(e)
+  }
   let blocks : Array[FramedBlock] = []
   let mut cursor = 0
   while cursor < data.length() {
@@ -153,6 +157,10 @@ pub fn decode_raw_blob(
   limits : Limits,
 ) -> Result[Bytes, OsmError] {
   let reader = ProtoReader::new(data)
+  match limits.validate() {
+    Ok(_) => ()
+    Err(e) => return Err(e)
+  }
   let mut raw : Bytes? = None
   let mut zlib_data : Bytes? = None
   let mut expected_size = -1L

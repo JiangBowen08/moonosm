@@ -5,6 +5,10 @@ pub fn decode_primitive_block(
   limits : Limits,
 ) -> Result[Array[Entity], OsmError] {
   let reader = ProtoReader::new(data)
+  match limits.validate() {
+    Ok(_) => ()
+    Err(e) => return Err(e)
+  }
   let strings : Array[String] = []
   let groups : Array[Bytes] = []
   let mut granularity = 100
