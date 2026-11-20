@@ -202,11 +202,12 @@ fn decode_node(
             Ok(
               Node(
                 id=node_id,
-                coordinate={
-                  lat_nanodegrees: lat_offset +
-                  latitude * granularity.to_int64(),
-                  lon_nanodegrees: lon_offset +
-                  longitude * granularity.to_int64(),
+                coordinate=match
+                  make_coordinate(
+                    latitude, longitude, granularity, lat_offset, lon_offset,
+                  ) {
+                  Ok(value) => value
+                  Err(problem) => return Err(problem)
                 },
                 tags~,
               ),
@@ -288,10 +289,15 @@ fn decode_dense_nodes(
         kv += 1
       }
       output.push(
-        Node(id~, tags=node_tags, coordinate={
-          lat_nanodegrees: lat_offset + lat * granularity.to_int64(),
-          lon_nanodegrees: lon_offset + lon * granularity.to_int64(),
-        }),
+        Node(
+          id~,
+          tags=node_tags,
+          coordinate=match
+            make_coordinate(lat, lon, granularity, lat_offset, lon_offset) {
+            Ok(value) => value
+            Err(problem) => return Err(problem)
+          },
+        ),
       )
     }
     if kv != key_values.length() {
