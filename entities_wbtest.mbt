@@ -39,3 +39,16 @@ test "DenseNodes requires one delimiter per tagged node" {
     1,
   )
 }
+
+///|
+test "way reference deltas cannot silently wrap" {
+  assert_true(
+    decode_way(
+      b"\x08\x01\x42\x0b\xfe\xff\xff\xff\xff\xff\xff\xff\xff\x01\x02",
+      [""],
+    )
+    is Err(_),
+  )
+  assert_true(checked_add(-9223372036854775807L - 1L, -1L) is Err(_))
+  assert_eq(checked_add(-5L, 4L).unwrap(), -1L)
+}

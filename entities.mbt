@@ -259,9 +259,18 @@ fn decode_dense_nodes(
     let mut lon : Int64 = 0L
     let mut kv = 0
     for index in 0..<ids.length() {
-      id += ids[index]
-      lat += lats[index]
-      lon += lons[index]
+      id = match checked_add(id, ids[index]) {
+        Ok(v) => v
+        Err(e) => return Err(e)
+      }
+      lat = match checked_add(lat, lats[index]) {
+        Ok(v) => v
+        Err(e) => return Err(e)
+      }
+      lon = match checked_add(lon, lons[index]) {
+        Ok(v) => v
+        Err(e) => return Err(e)
+      }
       let node_tags : Array[Tag] = []
       while kv < key_values.length() && key_values[kv] != 0 {
         if kv + 1 >= key_values.length() {
@@ -339,7 +348,10 @@ fn decode_way(
           let refs : Array[Int64] = []
           let mut reference : Int64 = 0L
           for delta in deltas {
-            reference += delta
+            reference = match checked_add(reference, delta) {
+              Ok(v) => v
+              Err(e) => return Err(e)
+            }
             refs.push(reference)
           }
           if reader.failed {
@@ -396,7 +408,10 @@ fn decode_relation(
             let members : Array[RelationMember] = []
             let mut member_id : Int64 = 0L
             for index in 0..<roles.length() {
-              member_id += member_deltas[index]
+              member_id = match checked_add(member_id, member_deltas[index]) {
+                Ok(v) => v
+                Err(e) => return Err(e)
+              }
               let role = lookup_string(strings, roles[index])
               let kind = match member_types[index] {
                 0 => Some(NodeMember)
