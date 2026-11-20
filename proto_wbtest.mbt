@@ -31,3 +31,20 @@ test "zigzag preserves full signed 64-bit endpoints" {
   )
   assert_eq(read_sint64(ProtoReader::new(b"\x01")), -1L)
 }
+
+///|
+test "skipping unknown byte fields advances without copying their payload" {
+  let reader = ProtoReader::new(b"\x03abc\x08\x2a")
+  reader.skip(2)
+  assert_eq(reader.pos, 4)
+  assert_eq(reader.read_tag(), 8)
+  assert_eq(reader.read_varint(), 42L)
+  assert_true(!reader.failed)
+  let truncated = ProtoReader::new(b"\x04abc")
+  truncated.skip(2)
+  assert_true(truncated.failed)
+  assert_eq(truncated.pos, 1)
+  let empty = ProtoReader::new(b"\x00\x08\x01")
+  empty.skip(2)
+  assert_eq(empty.read_tag(), 8)
+}

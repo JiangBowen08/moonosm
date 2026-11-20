@@ -92,7 +92,12 @@ fn ProtoReader::skip(self : ProtoReader, wire : Int32) -> Unit {
   match wire {
     0 => self.read_varint() |> ignore
     1 => self.skip_fixed(8)
-    2 => self.read_bytes() |> ignore
+    2 => {
+      let length = self.read_length()
+      if !self.failed {
+        self.pos += length
+      }
+    }
     5 => self.skip_fixed(4)
     _ => self.failed = true
   }
