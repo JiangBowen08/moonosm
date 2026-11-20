@@ -12,6 +12,23 @@ pub(all) suberror OsmError {
 }
 
 ///|
+/// Stable, credential-free diagnostics for command-line and host applications.
+pub fn OsmError::message(self : OsmError) -> String {
+  match self {
+    Truncated(offset~) => "truncated input at byte \{offset}"
+    HeaderTooLarge(size~) => "BlobHeader exceeds byte limit: \{size}"
+    BlobTooLarge(size~) => "Blob exceeds byte limit: \{size}"
+    InvalidHeader(offset~, reason~) =>
+      "invalid header at byte \{offset}: \{reason}"
+    UnsupportedCompression(kind~) => "unsupported compression: \{kind}"
+    InvalidPayload(offset~, reason~) =>
+      "invalid payload at byte \{offset}: \{reason}"
+    InvalidPrimitive(reason~) => "invalid primitive: \{reason}"
+    LimitExceeded(limit~, value~) => "limit exceeded (\{limit}): \{value}"
+  }
+}
+
+///|
 /// A raw framed block returned by the file layer.
 pub(all) struct FramedBlock {
   kind : String

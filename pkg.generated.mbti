@@ -43,6 +43,7 @@ pub(all) suberror OsmError {
   InvalidPrimitive(reason~ : String)
   LimitExceeded(limit~ : String, value~ : Int32)
 }
+pub fn OsmError::message(Self) -> String
 
 // Types and methods
 pub(all) struct Bounds {

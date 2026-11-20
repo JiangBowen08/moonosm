@@ -45,7 +45,7 @@ MoonBit 宿主程序也可以先将文件内容读入 `Bytes`，然后调用完�
 let limits = @moonosm.Limits::default()
 match @moonosm.decode_file(pbf_bytes, limits) {
   Ok(document) => println(@moonosm.encode_jsonl(document.entities))
-  Err(problem) => println(problem.to_string())
+  Err(problem) => println(problem.message())
 }
 ```
 
@@ -62,7 +62,7 @@ let bounds = @moonosm.Bounds::{
 }
 match @moonosm.encode_geojson_in_bounds(entities, node_index, bounds) {
   Ok(feature_collection) => println(feature_collection)
-  Err(problem) => println(problem.to_string())
+  Err(problem) => println(problem.message())
 }
 ```
 
