@@ -24,3 +24,7 @@ jobs:
         run: moon test --target ${{ matrix.target }}
       - name: Build
         run: moon build --target ${{ matrix.target }}
+      - name: Run public API examples
+        run: |
+          moon run --target ${{ matrix.target }} examples/decode
+          moon run --target ${{ matrix.target }} examples/geojson
