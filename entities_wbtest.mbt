@@ -1,11 +1,22 @@
 ///|
 test "StringTable errors and byte budgets are propagated" {
-  assert_true(read_string_table(b"\x0a\x02x", [], 10) is Err(_))
-  assert_true(read_string_table(b"\x0a\x01\xff", [], 10) is Err(_))
-  assert_true(read_string_table(b"\x0a\x02ab", [], 1) is Err(_))
-  assert_true(read_string_table(b"\x0a\x02ab\x0a\x02cd", [], 3) is Err(_))
+  assert_true(read_string_table(b"\x0a\x02x", [], 10, 0) is Err(_))
+  assert_true(read_string_table(b"\x0a\x01\xff", [], 10, 0) is Err(_))
+  assert_true(read_string_table(b"\x0a\x02ab", [], 1, 0) is Err(_))
+  assert_true(read_string_table(b"\x0a\x02ab\x0a\x02cd", [], 3, 0) is Err(_))
   assert_true(
     decode_primitive_block(b"\x0a\x03\x0a\x01x", Limits::default()) is Err(_),
+  )
+}
+
+///|
+test "PrimitiveBlock string budget spans merged StringTable fields" {
+  let limits = Limits::{ ..Limits::default(), max_string_bytes: 3, }
+  assert_true(
+    decode_primitive_block(
+      b"\x0a\x06\x0a\x00\x0a\x02ab\x0a\x04\x0a\x02cd", limits,
+    )
+    is Err(_),
   )
 }
 

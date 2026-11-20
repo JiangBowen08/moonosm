@@ -11,6 +11,7 @@ pub fn decode_primitive_block(
   }
   let strings : Array[String] = []
   let groups : Array[Bytes] = []
+  let mut string_bytes_used = 0
   let mut granularity = 100
   let mut lat_offset : Int64 = 0L
   let mut lon_offset : Int64 = 0L
@@ -18,8 +19,13 @@ pub fn decode_primitive_block(
     let field_tag = reader.read_tag()
     if field_tag == proto_tag(1, 2) {
       match
-        read_string_table(reader.read_bytes(), strings, limits.max_string_bytes) {
-        Ok(_) => ()
+        read_string_table(
+          reader.read_bytes(),
+          strings,
+          limits.max_string_bytes,
+          string_bytes_used,
+        ) {
+        Ok(used) => string_bytes_used = used
         Err(problem) => return Err(problem)
       }
     } else if field_tag == proto_tag(2, 2) {
@@ -75,9 +81,10 @@ fn read_string_table(
   data : Bytes,
   strings : Array[String],
   max_bytes : Int32,
-) -> Result[Unit, OsmError] {
+  already_used : Int32,
+) -> Result[Int32, OsmError] {
   let reader = ProtoReader::new(data)
-  let mut total_bytes = 0
+  let mut total_bytes = already_used
   while !reader.at_end() {
     let field_tag = reader.read_tag()
     if field_tag == proto_tag(1, 2) {
@@ -97,7 +104,7 @@ fn read_string_table(
   if reader.failed {
     Err(InvalidPrimitive(reason="malformed StringTable"))
   } else {
-    Ok(())
+    Ok(total_bytes)
   }
 }
 
