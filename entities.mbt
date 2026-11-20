@@ -77,12 +77,14 @@ fn read_string_table(
   max_bytes : Int32,
 ) -> Result[Unit, OsmError] {
   let reader = ProtoReader::new(data)
+  let mut total_bytes = 0
   while !reader.at_end() {
     let field_tag = reader.read_tag()
     if field_tag == proto_tag(1, 2) {
       let bytes = reader.read_bytes()
-      if bytes.length() > max_bytes {
-        return Err(LimitExceeded(limit="string bytes", value=bytes.length()))
+      total_bytes += bytes.length()
+      if total_bytes > max_bytes {
+        return Err(LimitExceeded(limit="string bytes", value=total_bytes))
       }
       let text = @utf8.decode(bytes[:]) catch {
         _ => return Err(InvalidPrimitive(reason="invalid UTF-8 in StringTable"))
