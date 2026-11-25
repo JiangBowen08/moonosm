@@ -19,8 +19,11 @@ jobs:
           curl --fail --silent --show-error --location https://cli.moonbitlang.com/install/unix.sh -o /tmp/install-moonbit.sh
           bash /tmp/install-moonbit.sh
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
-      - name: Record toolchain
-        run: moon version --all
+      - name: Pin stable toolchain version
+        run: |
+          moon version --all | tee /tmp/moon-version.txt
+          grep -Fq "moon 0.1.20261119" /tmp/moon-version.txt
+          grep -Fq "moonc v0.10.22+124d61d05" /tmp/moon-version.txt
       - name: Check formatting
         run: moon fmt --check
       - name: Strict check
