@@ -4,10 +4,10 @@ MoonOSM 是 MoonBit 编写的 OpenStreetMap Protocolbuffer Binary Format（OSM P
 
 ## 环境与安装
 
-项目 manifest 版本为 `0.1.1`，使用 MoonBit `0.1.20261119` 或更新版本。zlib 解码依赖工具链中的实验性 `moonbitlang/core/compress/zlib` API。在新的 MoonBit 模块中安装精确版本：
+项目 manifest 版本为 `0.1.2`，使用 MoonBit `0.1.20261119` 或更新版本。zlib 解码依赖工具链中的实验性 `moonbitlang/core/compress/zlib` API。在新的 MoonBit 模块中安装精确版本：
 
 ```powershell
-moon add JiangBowen08/moonosm@0.1.1
+moon add JiangBowen08/moonosm@0.1.2
 ```
 
 在消费包的 `moon.pkg` 中加入 `import { "JiangBowen08/moonosm" }`，以 `@moonosm` 调用公开 API。核心库支持 wasm、wasm-gc、js、native；依赖异步文件系统的两个文件示例只支持 wasm。
@@ -97,7 +97,7 @@ moon run --target wasm examples/extract -- andorra.osm.pbf routes.jsonl jsonl re
 
 入口参数为 `INPUT OUTPUT jsonl|geojson all|nodes|ways|relations KEY VALUE [SOUTH WEST NORTH EAST]`；`- -` 表示不筛标签。先从完整实体集建立节点索引，再独立筛 Way 标签，未带标签的支撑节点不会丢失。带范围的 JSONL 只筛相交实体并保留原引用，不生成自包含子 PBF；GeoJSON 则裁剪坐标。Relation 的范围提取与 GeoJSON 返回明确错误。非法格式、类型和范围返回非零状态。
 
-示例报告 `decoded` 和 `selected`，后者是选中的实体数；零长度 Way 无法形成有效线时不会生成 GeoJSON feature。因此验收样本命中 220 条道路，实际输出 219 条线。三场景及独立解析器全字段对照的复现方法见 [验收说明](https://github.com/JiangBowen08/moonosm/blob/v0.1.1/docs/validation.md)。
+示例报告 `decoded` 和 `selected`，后者是选中的实体数；零长度 Way 无法形成有效线时不会生成 GeoJSON feature。因此验收样本命中 220 条道路，实际输出 219 条线。三场景及独立解析器全字段对照的复现方法见 [验收说明](https://github.com/JiangBowen08/moonosm/blob/v0.1.2/docs/validation.md)。
 
 ## 检查与构建
 

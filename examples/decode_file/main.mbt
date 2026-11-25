@@ -25,6 +25,9 @@ async fn main {
       println("nodes=\{nodes} ways=\{ways} relations=\{relations}")
       println("wrote \{output_path}")
     }
-    Err(_) => println("failed to decode OSM PBF file; output was not written")
+    Err(problem) => {
+      println("failed to decode OSM PBF file: " + problem.message())
+      @env.exit(1)
+    }
   }
 }
