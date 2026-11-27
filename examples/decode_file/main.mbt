@@ -2,11 +2,11 @@
 /// Decode a complete OSM PBF file and write its entities as JSONL.
 async fn main {
   let args = @env.args()[1:]
-  guard args is [input_path, output_path, ..] else {
+  guard args is [input_path, output_path] else {
     println(
       "usage: moon run --target wasm examples/decode_file -- <input.osm.pbf> <output.jsonl>",
     )
-    return
+    @env.exit(2)
   }
   let bytes = @fs.read_binary(input_path)
   match @moonosm.decode_file(bytes, @moonosm.Limits::default()) {

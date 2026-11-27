@@ -17,13 +17,14 @@ jobs:
       - name: Install official MoonBit toolchain
         run: |
           curl --fail --silent --show-error --location https://cli.moonbitlang.com/install/unix.sh -o /tmp/install-moonbit.sh
-          bash /tmp/install-moonbit.sh
+          bash /tmp/install-moonbit.sh '0.10.22+124d61d05'
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
       - name: Pin stable toolchain version
         run: |
           moon version --all | tee /tmp/moon-version.txt
           grep -Fq "moon 0.1.20261119" /tmp/moon-version.txt
           grep -Fq "moonc v0.10.22+124d61d05" /tmp/moon-version.txt
+          grep -Fq "moonrun 0.1.20261119" /tmp/moon-version.txt
       - name: Check formatting
         run: moon fmt --check
       - name: Strict check
@@ -37,3 +38,6 @@ jobs:
         run: |
           moon run --target ${{ matrix.target }} examples/decode
           moon run --target ${{ matrix.target }} examples/geojson
+      - name: File CLI regression
+        if: matrix.target == 'wasm'
+        run: python3 scripts/verify_cli.py

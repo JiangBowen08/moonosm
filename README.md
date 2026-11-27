@@ -4,10 +4,10 @@ MoonOSM 是 MoonBit 编写的 OpenStreetMap Protocolbuffer Binary Format（OSM P
 
 ## 环境与安装
 
-项目 manifest 版本为 `0.1.2`，使用 MoonBit `0.1.20261119` 或更新版本。zlib 解码依赖工具链中的实验性 `moonbitlang/core/compress/zlib` API。在新的 MoonBit 模块中安装精确版本：
+项目 manifest 版本为 `0.1.3`。本版本使用并验证 MoonBit 1.0 RC 前工具链：`moonc v0.10.22+124d61d05`、`moon` / `moonrun 0.1.20261119`；CI 从官方指定版本归档安装，不跟随 `latest`。zlib 解码依赖工具链中的实验性 `moonbitlang/core/compress/zlib` API。在新的 MoonBit 模块中安装精确版本：
 
 ```powershell
-moon add JiangBowen08/moonosm@0.1.2
+moon add JiangBowen08/moonosm@0.1.3
 ```
 
 在消费包的 `moon.pkg` 中加入 `import { "JiangBowen08/moonosm" }`，以 `@moonosm` 调用公开 API。核心库支持 wasm、wasm-gc、js、native；依赖异步文件系统的两个文件示例只支持 wasm。
@@ -119,3 +119,13 @@ moon run examples/decode
 ## 参考与许可
 
 字段映射依据 [OpenStreetMap PBF 格式说明](https://wiki.openstreetmap.org/wiki/PBF_Format) 及其 `fileformat.proto`、`osmformat.proto` schema。仓库实现自有的受限 protobuf wire reader、OSM 实体映射、查询和几何处理；未复制上游实现代码，也未捆绑 OSM 数据集夹具。项目使用 Apache-2.0 许可证，开发中使用了 AI 辅助；维护者负责最终代码审查、测试和来源合规。
+
+## 命令行错误回归
+
+文件解码示例仅接受输入和输出两个路径；参数错误退出 `2`，解码错误退出 `1`，成功退出 `0`。解码失败不会创建或覆盖输出文件。使用 Python 3 运行独立 CLI 回归：
+
+```powershell
+python scripts/verify_cli.py
+```
+
+回归使用手工构造的最小 raw PBF，检查缺参、多参、损坏输入、输出保护及合法节点导出。
